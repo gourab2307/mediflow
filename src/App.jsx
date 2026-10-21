@@ -16,7 +16,7 @@ import {
   Users,
   X,
 } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 const features = [
   {
@@ -46,6 +46,30 @@ const features = [
 ]
 
 function App() {
+  const [patients, setPatients] = useState([])
+const [loadingPatients, setLoadingPatients] = useState(true)
+const [patientError, setPatientError] = useState('')
+
+useEffect(() => {
+  async function fetchPatients() {
+    try {
+      const response = await fetch('http://localhost:5001/api/patients')
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch patients')
+      }
+
+      const result = await response.json()
+      setPatients(result.data)
+    } catch (error) {
+      setPatientError(error.message)
+    } finally {
+      setLoadingPatients(false)
+    }
+  }
+
+  fetchPatients()
+}, [])
   const [menuOpen, setMenuOpen] = useState(false)
 
   return (
@@ -183,7 +207,9 @@ function App() {
     <div className="grid grid-cols-2 gap-3 p-5 sm:grid-cols-3">
       <div className="rounded-2xl bg-teal-50 p-4">
         <Users className="mb-3 text-teal-700" size={21} />
-        <p className="text-2xl font-bold text-slate-900">128</p>
+        <p className="text-2xl font-bold text-slate-900">
+          {loadingPatients ? '...' : patientError ? '—' : patients.length}
+        </p>
         <p className="mt-1 text-xs text-slate-500">Patient profiles</p>
       </div>
       <div className="rounded-2xl bg-blue-50 p-4">
@@ -239,6 +265,63 @@ function App() {
 </motion.div>
 </div>
 </section>  
+
+{/* Patient Records Section */}
+<section id="patients" className="py-16 sm:py-20">
+  <div className="mx-auto max-w-7xl px-6">
+    <div className="mb-8">
+      <p className="text-sm font-semibold uppercase tracking-widest text-emerald-600">
+        Live Data
+      </p>
+
+      <h2 className="mt-2 text-3xl font-bold tracking-tight">
+        Patient Records
+      </h2>
+
+      <p className="mt-3 text-gray-500">
+        Patient information retrieved from the MediFlow database.
+      </p>
+    </div>
+
+    {loadingPatients ? (
+      <p className="text-gray-500">Loading patient records...</p>
+    ) : patientError ? (
+      <p className="text-red-500">
+        Unable to load patients: {patientError}
+      </p>
+    ) : patients.length === 0 ? (
+      <p className="rounded-xl border border-gray-200 p-6 text-gray-500">
+        No patient records found. Add a patient through the API to see it here.
+      </p>
+    ) : (
+      <div className="overflow-x-auto rounded-2xl border border-gray-200">
+        <table className="w-full text-left text-sm">
+          <thead className="bg-gray-50 text-gray-600">
+            <tr>
+              <th className="px-6 py-4 font-semibold">Name</th>
+              <th className="px-6 py-4 font-semibold">Age</th>
+              <th className="px-6 py-4 font-semibold">Gender</th>
+              <th className="px-6 py-4 font-semibold">Phone</th>
+            </tr>
+          </thead>
+
+          <tbody className="divide-y divide-gray-200">
+            {patients.map((patient) => (
+              <tr key={patient._id}>
+                <td className="px-6 py-4 font-medium">
+                  {patient.name}
+                </td>
+                <td className="px-6 py-4">{patient.age}</td>
+                <td className="px-6 py-4">{patient.gender}</td>
+                <td className="px-6 py-4">{patient.phone}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    )}
+  </div>
+</section>
 
 
         {/* Feature section */}
