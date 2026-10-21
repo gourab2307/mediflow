@@ -49,6 +49,59 @@ function App() {
   const [patients, setPatients] = useState([])
 const [loadingPatients, setLoadingPatients] = useState(true)
 const [patientError, setPatientError] = useState('')
+const [formData, setFormData] = useState({
+  name: '',
+  age: '',
+  gender: 'Male',
+  phone: '',
+})
+
+const [savingPatient, setSavingPatient] = useState(false)
+const [formMessage, setFormMessage] = useState('')
+
+async function handleRegisterPatient(event) {
+  event.preventDefault()
+
+  setSavingPatient(true)
+  setFormMessage('')
+
+  try {
+    const response = await fetch('http://localhost:5001/api/patients', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        ...formData,
+        age: Number(formData.age),
+      }),
+    })
+
+    const result = await response.json()
+
+    if (!response.ok) {
+      throw new Error(result.message || 'Failed to register patient')
+    }
+
+    setPatients((currentPatients) => [
+      ...currentPatients,
+      result.data,
+    ])
+
+    setFormData({
+      name: '',
+      age: '',
+      gender: 'Male',
+      phone: '',
+    })
+
+    setFormMessage('Patient registered successfully!')
+  } catch (error) {
+    setFormMessage(error.message)
+  } finally {
+    setSavingPatient(false)
+  }
+}
 
 useEffect(() => {
   async function fetchPatients() {
@@ -281,6 +334,82 @@ useEffect(() => {
       <p className="mt-3 text-gray-500">
         Patient information retrieved from the MediFlow database.
       </p>
+      {/* Add Patient Form */}
+<form
+  className="mb-8 rounded-2xl border border-gray-200 bg-white p-6"
+  onSubmit={handleRegisterPatient}
+>
+  <h3 className="mb-5 text-xl font-semibold text-slate-900">
+    Register New Patient
+  </h3>
+
+  <div className="grid gap-4 sm:grid-cols-2">
+    <input
+      type="text"
+      placeholder="Patient name"
+      value={formData.name}
+      onChange={(event) =>
+        setFormData({ ...formData, name: event.target.value })
+      }
+      required
+      className="rounded-xl border border-gray-300 px-4 py-3 outline-none focus:border-teal-600"
+    />
+
+    <input
+      type="number"
+      placeholder="Age"
+      min="0"
+      value={formData.age}
+      onChange={(event) =>
+        setFormData({ ...formData, age: event.target.value })
+      }
+      required
+      className="rounded-xl border border-gray-300 px-4 py-3 outline-none focus:border-teal-600"
+    />
+
+    <select
+      value={formData.gender}
+      onChange={(event) =>
+        setFormData({ ...formData, gender: event.target.value })
+      }
+      className="rounded-xl border border-gray-300 bg-white px-4 py-3 outline-none focus:border-teal-600"
+    >
+      <option value="Male">Male</option>
+      <option value="Female">Female</option>
+      <option value="Other">Other</option>
+    </select>
+
+    <input
+      type="tel"
+      placeholder="Phone number"
+      value={formData.phone}
+      onChange={(event) =>
+        setFormData({ ...formData, phone: event.target.value })
+      }
+      required
+      className="rounded-xl border border-gray-300 px-4 py-3 outline-none focus:border-teal-600"
+    />
+  </div>
+
+  <button
+    type="submit"
+    disabled={savingPatient}
+    className="mt-5 rounded-xl bg-teal-700 px-6 py-3 font-medium text-white transition hover:bg-teal-800"
+  >
+    {savingPatient ? 'Registering...' : 'Register Patient'}
+  </button>
+  {formMessage && (
+  <p
+    className={`mt-4 text-sm font-medium ${
+      formMessage.includes('successfully')
+        ? 'text-emerald-600'
+        : 'text-red-600'
+    }`}
+  >
+    {formMessage}
+  </p>
+)}
+</form>
     </div>
 
     {loadingPatients ? (
