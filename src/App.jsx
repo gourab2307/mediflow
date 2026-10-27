@@ -49,6 +49,7 @@ function App() {
   const [patients, setPatients] = useState([])
 const [loadingPatients, setLoadingPatients] = useState(true)
 const [patientError, setPatientError] = useState('')
+const [editingPatient, setEditingPatient] = useState(null)
 const [formData, setFormData] = useState({
   name: '',
   age: '',
@@ -102,6 +103,46 @@ async function handleRegisterPatient(event) {
     setSavingPatient(false)
   }
 }
+
+async function handleUpdatePatient(event) {
+  event.preventDefault()
+
+  try {
+    const response = await fetch(
+      `http://localhost:5001/api/patients/${editingPatient._id}`,
+      {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...editingPatient,
+          age: Number(editingPatient.age),
+        }),
+      }
+    )
+
+    const result = await response.json()
+
+    if (!response.ok) {
+      throw new Error(result.message || 'Failed to update patient')
+    }
+
+    setPatients((currentPatients) =>
+      currentPatients.map((patient) =>
+        patient._id === editingPatient._id
+          ? result.data
+          : patient
+      )
+    )
+
+    setEditingPatient(null)
+    setFormMessage('Patient updated successfully!')
+  } catch (error) {
+    setFormMessage(error.message)
+  }
+}
+
 
 useEffect(() => {
   async function fetchPatients() {
@@ -424,6 +465,94 @@ useEffect(() => {
       </p>
     ) : (
       <div className="overflow-x-auto rounded-2xl border border-gray-200">
+        {/* Edit Patient Form */}
+{editingPatient && (
+  <form
+    className="mb-8 rounded-2xl border border-teal-200 bg-white p-6"
+    onSubmit={handleUpdatePatient}
+  >
+    <h3 className="mb-5 text-xl font-semibold text-slate-900">
+      Edit Patient Details
+    </h3>
+
+    <div className="grid gap-4 sm:grid-cols-2">
+      <input
+        type="text"
+        placeholder="Patient name"
+        value={editingPatient.name}
+        onChange={(event) =>
+          setEditingPatient({
+            ...editingPatient,
+            name: event.target.value,
+          })
+        }
+        required
+        className="rounded-xl border border-gray-300 px-4 py-3"
+      />
+
+      <input
+        type="number"
+        placeholder="Age"
+        min="0"
+        value={editingPatient.age}
+        onChange={(event) =>
+          setEditingPatient({
+            ...editingPatient,
+            age: event.target.value,
+          })
+        }
+        required
+        className="rounded-xl border border-gray-300 px-4 py-3"
+      />
+
+      <select
+        value={editingPatient.gender}
+        onChange={(event) =>
+          setEditingPatient({
+            ...editingPatient,
+            gender: event.target.value,
+          })
+        }
+        className="rounded-xl border border-gray-300 bg-white px-4 py-3"
+      >
+        <option value="Male">Male</option>
+        <option value="Female">Female</option>
+        <option value="Other">Other</option>
+      </select>
+
+      <input
+        type="tel"
+        placeholder="Phone number"
+        value={editingPatient.phone}
+        onChange={(event) =>
+          setEditingPatient({
+            ...editingPatient,
+            phone: event.target.value,
+          })
+        }
+        required
+        className="rounded-xl border border-gray-300 px-4 py-3"
+      />
+    </div>
+
+    <div className="mt-5 flex gap-3">
+      <button
+        type="submit"
+        className="rounded-xl bg-teal-700 px-6 py-3 font-medium text-white hover:bg-teal-800"
+      >
+        Save Changes
+      </button>
+
+      <button
+        type="button"
+        onClick={() => setEditingPatient(null)}
+        className="rounded-xl border border-gray-300 px-6 py-3 font-medium text-gray-700 hover:bg-gray-50"
+      >
+        Cancel
+      </button>
+    </div>
+  </form>
+)}
         <table className="w-full text-left text-sm">
           <thead className="bg-gray-50 text-gray-600">
             <tr>
@@ -431,6 +560,7 @@ useEffect(() => {
               <th className="px-6 py-4 font-semibold">Age</th>
               <th className="px-6 py-4 font-semibold">Gender</th>
               <th className="px-6 py-4 font-semibold">Phone</th>
+              <th className="px-6 py-4 font-semibold">Actions</th>
             </tr>
           </thead>
 
@@ -443,6 +573,15 @@ useEffect(() => {
                 <td className="px-6 py-4">{patient.age}</td>
                 <td className="px-6 py-4">{patient.gender}</td>
                 <td className="px-6 py-4">{patient.phone}</td>
+                <td className="px-6 py-4">
+  <button
+    type="button"
+    onClick={() => setEditingPatient(patient)}
+    className="rounded-lg bg-teal-700 px-4 py-2 text-sm font-medium text-white hover:bg-teal-800"
+  >
+    Edit
+  </button>
+</td>
               </tr>
             ))}
           </tbody>
