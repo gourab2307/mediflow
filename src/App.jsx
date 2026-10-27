@@ -143,6 +143,35 @@ async function handleUpdatePatient(event) {
   }
 }
 
+async function handleDeletePatient(patientId) {
+  try {
+    const response = await fetch(
+      `http://localhost:5001/api/patients/${patientId}`,
+      {
+        method: 'DELETE',
+      }
+    )
+
+    const result = await response.json()
+
+    if (!response.ok) {
+      throw new Error(result.message || 'Failed to delete patient')
+    }
+
+    setPatients((currentPatients) =>
+      currentPatients.filter((patient) => patient._id !== patientId)
+    )
+
+    if (editingPatient?._id === patientId) {
+      setEditingPatient(null)
+    }
+
+    setFormMessage('Patient deleted successfully!')
+  } catch (error) {
+    setFormMessage(error.message)
+  }
+}
+
 
 useEffect(() => {
   async function fetchPatients() {
@@ -573,15 +602,35 @@ useEffect(() => {
                 <td className="px-6 py-4">{patient.age}</td>
                 <td className="px-6 py-4">{patient.gender}</td>
                 <td className="px-6 py-4">{patient.phone}</td>
-                <td className="px-6 py-4">
-  <button
-    type="button"
-    onClick={() => setEditingPatient(patient)}
-    className="rounded-lg bg-teal-700 px-4 py-2 text-sm font-medium text-white hover:bg-teal-800"
-  >
-    Edit
-  </button>
+                
+<td className="px-6 py-4">
+  <div className="flex gap-2">
+    <button
+      type="button"
+      onClick={() => setEditingPatient(patient)}
+      className="rounded-lg bg-teal-700 px-4 py-2 text-sm font-medium text-white hover:bg-teal-800"
+    >
+      Edit
+    </button>
+
+    <button
+      type="button"
+      onClick={() => {
+        const confirmed = window.confirm(
+          `Are you sure you want to delete ${patient.name}?`
+        )
+
+        if (confirmed) {
+          handleDeletePatient(patient._id)
+        }
+      }}
+      className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
+    >
+      Delete
+    </button>
+  </div>
 </td>
+
               </tr>
             ))}
           </tbody>
