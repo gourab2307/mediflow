@@ -5,12 +5,14 @@ const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
 const Patient = require('./models/Patient');
+const authRoutes = require('./routes/auth');
 
 const app = express();
 const PORT = process.env.PORT || 5001;
 
 app.use(cors({ origin: 'http://localhost:5173' }));
 app.use(express.json());
+app.use('/api/auth', authRoutes);
 
 // Test route
 app.get('/', (req, res) => {
@@ -26,32 +28,6 @@ app.get('/api/health', (req, res) => {
 });
 
 
-app.post('/api/patients', async (req, res) => {
-  try {
-    const { name, age, gender, phone } = req.body;
-
-    const patient = await Patient.create({
-      name,
-      age,
-      gender,
-      phone,
-    });
-
-    res.status(201).json({
-      success: true,
-      message: 'Patient created successfully',
-      data: patient,
-    });
-  } catch (error) {
-    res.status(400).json({
-      success: false,
-      message: error.message,
-    });
-  }
-});
-
-
-// Create a new patient
 app.post('/api/patients', async (req, res) => {
   try {
     const { name, age, gender, phone } = req.body;
@@ -93,6 +69,7 @@ app.get('/api/patients', async (req, res) => {
     });
   }
 });
+
 
  // Update a patient by ID
 app.put('/api/patients/:id', async (req, res) => {
