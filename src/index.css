@@ -1,7 +1,10 @@
 
 @import "tailwindcss";
 
-/* MediFlow global styles */
+/* ========================================
+   MediFlow — Global Design System
+======================================== */
+
 :root {
   font-family: Inter, ui-sans-serif, system-ui, -apple-system,
     BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -10,22 +13,78 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 
-  color: #172b4d;
-  background: #ffffff;
+  /* Light theme */
+  color-scheme: light;
+  --color-bg: #f7f9fc;
+  --color-surface: #ffffff;
+  --color-surface-muted: #f1f5f9;
+  --color-text: #172b4d;
+  --color-text-muted: #64748b;
+  --color-border: #e2e8f0;
+  --color-primary: #2563eb;
+  --color-primary-hover: #1d4ed8;
+  --color-accent: #0d9488;
+  --color-danger: #dc2626;
+  --color-success: #15803d;
+
+  /* Layout */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 18px;
+  --radius-xl: 24px;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 3px rgb(15 23 42 / 6%);
+  --shadow-md: 0 8px 24px rgb(15 23 42 / 8%);
+  --shadow-lg: 0 16px 48px rgb(15 23 42 / 12%);
+
+  /* Motion */
+  --transition-fast: 180ms ease;
+  --transition-normal: 260ms ease;
+
+  color: var(--color-text);
+  background: var(--color-bg);
 }
 
+/* Dark theme */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --color-bg: #0b1120;
+  --color-surface: #111b2e;
+  --color-surface-muted: #18243a;
+  --color-text: #e5edf8;
+  --color-text-muted: #a3b3c9;
+  --color-border: #293750;
+  --color-primary: #60a5fa;
+  --color-primary-hover: #93c5fd;
+  --color-accent: #2dd4bf;
+  --color-danger: #f87171;
+  --color-success: #4ade80;
+
+  --shadow-sm: 0 1px 3px rgb(0 0 0 / 18%);
+  --shadow-md: 0 8px 24px rgb(0 0 0 / 22%);
+  --shadow-lg: 0 16px 48px rgb(0 0 0 / 30%);
+}
+
+/* Global reset */
 * {
   box-sizing: border-box;
 }
 
 html {
   scroll-behavior: smooth;
+  scroll-padding-top: 80px;
 }
 
 body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
+  color: var(--color-text);
+  background: var(--color-bg);
+  transition:
+    background-color var(--transition-normal),
+    color var(--transition-normal);
 }
 
 button,
@@ -39,6 +98,11 @@ button {
   cursor: pointer;
 }
 
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
 a {
   color: inherit;
   text-decoration: none;
@@ -47,5 +111,58 @@ a {
 img {
   display: block;
   max-width: 100%;
+}
+
+::selection {
+  color: #ffffff;
+  background: #2563eb;
+}
+
+/* Accessible keyboard focus */
+:focus-visible {
+  outline: 3px solid var(--color-primary);
+  outline-offset: 3px;
+}
+
+/* Shared surfaces for future dashboards */
+.theme-surface {
+  color: var(--color-text);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.theme-muted {
+  color: var(--color-text-muted);
+}
+
+.theme-transition {
+  transition:
+    color var(--transition-fast),
+    background-color var(--transition-fast),
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast);
+}
+
+/* Respect reduced-motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Mobile navigation theme contrast */
+:root[data-theme="dark"] [data-theme-aware="menu"] a:not(.mobile-primary-action) {
+  color: var(--color-text);
+}
+
+:root[data-theme="dark"] [data-theme-aware="menu"] a:not(.mobile-primary-action):hover {
+  background: var(--color-surface-muted);
 }
 
