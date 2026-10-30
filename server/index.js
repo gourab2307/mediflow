@@ -6,6 +6,7 @@ const cors = require('cors');
 const mongoose = require('mongoose');
 const Patient = require('./models/Patient');
 const authRoutes = require('./routes/auth');
+const { protect, authorize } = require('./middleware/authMiddleware');
 
 const app = express();
 const PORT = process.env.PORT || 5001;
@@ -28,7 +29,7 @@ app.get('/api/health', (req, res) => {
 });
 
 
-app.post('/api/patients', async (req, res) => {
+app.post('/api/patients', protect, authorize('admin'), async (req, res) => {
   try {
     const { name, age, gender, phone } = req.body;
 
@@ -53,7 +54,7 @@ app.post('/api/patients', async (req, res) => {
 });
 
  // Get all patients
-app.get('/api/patients', async (req, res) => {
+app.get('/api/patients', protect, authorize('admin', 'doctor'), async (req, res) => {
   try {
     const patients = await Patient.find();
 
@@ -72,7 +73,7 @@ app.get('/api/patients', async (req, res) => {
 
 
  // Update a patient by ID
-app.put('/api/patients/:id', async (req, res) => {
+app.put('/api/patients/:id', protect, authorize('admin'), async (req, res) => {
   try {
     const patient = await Patient.findByIdAndUpdate(
       req.params.id,
@@ -104,7 +105,7 @@ app.put('/api/patients/:id', async (req, res) => {
 });
 
  // Delete a patient by ID
-app.delete('/api/patients/:id', async (req, res) => {
+app.delete('/api/patients/:id', protect, authorize('admin'), async (req, res) => {
   try {
     const patient = await Patient.findByIdAndDelete(
       req.params.id
